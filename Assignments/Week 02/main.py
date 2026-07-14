@@ -4,5 +4,9 @@ app = FastAPI()
 
 @app.get("/")
 def home():
-    return {"message" : "Hello this is my first api call using fastApi."}
+    return { "name": "Task API", "version": "1.0", "endpoints": ["/tasks"] }
+
+@app.get("/health")
+def status():
+    return {"status" : "ok"}
 
