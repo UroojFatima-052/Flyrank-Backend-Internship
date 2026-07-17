@@ -47,7 +47,6 @@ def specific_tasks(id : int):
         
     raise HTTPException(status_code=404, detail=f"Task {id} not found")
 
-
 # Stage 03
 class TaskInput(BaseModel):
     title : str
@@ -86,7 +85,6 @@ def update_tasks(id : int, task : TaskUpdate):
             return JSONResponse(status_code=200, content=item)
     
     raise HTTPException(status_code=404, detail=f"Task {id} not found")
-
 
 @app.delete("/tasks/{id}")
 def delete_tasks(id : int):
