@@ -34,10 +34,10 @@ def home():
 def status():
     return {"status" : "ok"}
 
-# Stage 02
-@app.get("/tasks")
-def all_tasks():
-    return tasks
+# # Stage 02  --------> committed because extras query parameter part covers "all tasks" case
+# @app.get("/tasks")
+# def all_tasks():
+#     return tasks
 
 @app.get("/tasks/{id}")
 def specific_tasks(id : int):
@@ -96,7 +96,51 @@ def delete_tasks(id : int):
     raise HTTPException(status_code=404, detail=f"Task {id} not found")
     
     
+# Extras
+# Query Parameter & Search Parameter
+@app.get("/tasks")
+def parameterized_tasks(done: bool = None, search: str = None):
+    if done is None and search is None:
+        return tasks
     
+    filtered = []
+
+    for item in tasks:
+        done_match = (done is None) or (item["done"] == done)
+        search_match = (search is None) or (search in item["title"])
+        
+        if done_match and search_match:
+            filtered.append(item)
+            
+    return filtered
+
+# Stats
+@app.get("/stats")
+def stats():
+    total = len(tasks)
+    
+    count_done = 0
+
+    for item in tasks:
+        if item["done"] is True:
+            count_done += 1
+
+    open_tasks = total - count_done
+
+    return {"total" : total, "done" : count_done, "open" : open_tasks}
+
+    
+@app.post("/reset")
+def reset():
+    tasks.clear()
+    
+    tasks.append({"id": 1, "title": "BE-01", "done": False})
+    tasks.append({"id": 2, "title": "Event Attend", "done": True})
+    tasks.append({"id": 3, "title": "Exercise", "done": False})
+    
+    return {"message": "Tasks reset successfully"}
+
+
 
 
 
