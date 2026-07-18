@@ -50,7 +50,38 @@ HTTP/1.1 201 Created
 Open http://localhost:8000/docs to test all endpoints visually.
 ```
 
-!![alt text](swagger.png)
+![alt text](swagger.png)
+
+## AI vs Me
+
+**My prompt:**
+I need your help building a CRUD API. I have chosen Python with FastAPI for this task.
+
+Stage 0: Set up a FastAPI app and run it on localhost port 8000 so that it returns a hello message. Commit as "Stage 0: hello server"
+
+Stage 1: Create two routes. First is GET / that returns {"name": "Task API", "version": "1.0", "endpoints": ["/tasks"]}. Second is GET /health that returns {"status": "ok"}. Commit as "Stage 1: root and health endpoints"
+
+Stage 2: Create an in-memory list with 3 tasks. Each task has id (int), title (str), done (bool). Create GET /tasks that returns all tasks. Create GET /tasks/{id} that returns one task — if not found return 404 with {"error": "Task {id} not found"}. Commit as "Stage 2: read endpoints with 404"
+
+Stage 3: Create POST /tasks. Validate that title is not missing or empty — if invalid return 400. If valid, create the task with next available id, done set to False, and return it with status 201. Use Pydantic for validation. Commit as "Stage 3: create with validation"
+
+Stage 4: Create PUT /tasks/{id} — find task by id, if not found return 404, if body is empty return 400, otherwise update title and/or done and return updated task with 200. Create DELETE /tasks/{id} — if not found return 404, if found delete it and return 204 with empty body. Commit as "Stage 4: full CRUD"
+
+Stage 5: Make sure Swagger UI is available at /docs — FastAPI provides this automatically. Commit as "Stage 5: Swagger UI"
+
+Make sure all error responses include a JSON error message. Status codes must be correct — 200 reads, 201 create, 204 delete, 400 invalid input, 404 not found.
+
+**What AI did better:**
+ChatGPT created Pydantic models and custom error handlers at the top and reused them throughout — more professional and organized than my approach of handling things inline.
+
+**What AI got wrong or ignored:**
+Nothing major — the core functionality matched my spec pretty closely.
+
+**What AI silently decided:**
+I never asked for a custom exception handler or separate validator classes — ChatGPT added those on its own. Also used `tasks.pop(index)` instead of `tasks.remove(item)` for deletion which I didn't specify.
+
+**What I improved in my prompt:**
+Added that error responses should be plain JSON and that no extra handlers or classes are needed beyond what's specified.
 
 ## What I Learned
 
