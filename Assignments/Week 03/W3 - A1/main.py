@@ -71,15 +71,17 @@ class TaskInput(BaseModel):
 async def add_tasks(task: TaskInput):
     if not task.title or task.title.strip() == "":
         return JSONResponse(status_code=400, content={"error": "Title cannot be empty"})
-
-    new_task = {
-        "id" : len(tasks) + 1,
-        "title" : task.title,
-        "done" : False 
-        }
     
-    tasks.append(new_task)
-    return JSONResponse(status_code=201, content=new_task)
+    new_task = Task(
+        title = task.title,
+        done = False )
+    
+    with Session(engine) as session:
+        session.add(new_task)
+        session.commit()
+        session.refresh(new_task)
+        
+        return JSONResponse(status_code=201, content=new_task.model_dump())
 
 #Stage 04
 class TaskUpdate(BaseModel):
