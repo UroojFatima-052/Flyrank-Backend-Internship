@@ -54,8 +54,11 @@ def status():
 
 @app.get("/tasks/{id}")
 def specific_tasks(id : int):
-    for item in tasks:
-        if item["id"] == id:
+    with Session(engine) as session:
+        all_tasks = session.exec(select(Task)).all()
+
+    for item in all_tasks:
+        if item.id == id:
             return item
         
     raise HTTPException(status_code=404, detail=f"Task {id} not found")
@@ -113,14 +116,17 @@ def delete_tasks(id : int):
 # Query Parameter & Search Parameter
 @app.get("/tasks")
 def parameterized_tasks(done: bool = None, search: str = None):
+    with Session(engine) as session:
+        all_tasks = session.exec(select(Task)).all()
+
     if done is None and search is None:
-        return tasks
+        return all_tasks
     
     filtered = []
 
-    for item in tasks:
-        done_match = (done is None) or (item["done"] == done)
-        search_match = (search is None) or (search in item["title"])
+    for item in all_tasks:
+        done_match = (done is None) or (item.done == done)
+        search_match = (search is None) or (search in item.title)
         
         if done_match and search_match:
             filtered.append(item)
