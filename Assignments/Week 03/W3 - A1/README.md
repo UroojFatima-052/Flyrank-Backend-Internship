@@ -60,6 +60,7 @@ HTTP/1.1 201 Created
 SELECT * FROM tasks WHERE done = 1;
 ```
 
+
 ## What Actually Clicked
 
 - Deleted all tasks from DB Browser, hit GET /tasks — empty. No restart needed, the API just reflects whatever is in the database at that moment
