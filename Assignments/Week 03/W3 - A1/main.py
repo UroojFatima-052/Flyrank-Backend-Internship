@@ -89,29 +89,37 @@ class TaskUpdate(BaseModel):
     done : bool = None
 
 @app.put("/tasks/{id}")
-def update_tasks(id : int, task : TaskUpdate):
-    if task.title is None and task.done is None:
+def update_tasks(id : int, user_task : TaskUpdate):
+    if user_task.title is None and user_task.done is None:
         return JSONResponse(status_code=400, content={"error": "Data cannot be empty"})
     
-    for item in tasks:
-        if item["id"] == id:
-            if task.title is not None:
-                item['title'] = task.title
-            if task.done is not None:
-                item['done'] = task.done
+    with Session(engine) as session:
+        task = session.get(Task, id)
 
-            return JSONResponse(status_code=200, content=item)
-    
-    raise HTTPException(status_code=404, detail=f"Task {id} not found")
+        if task is None:
+            raise HTTPException(status_code=404, detail=f"Task {id} not found")
+        
+        if user_task.title is not None:
+            task.title = user_task.title
+        if user_task.done is not None:
+            task.done = user_task.done
+
+        session.commit()
+        session.refresh(task)
+
+        return JSONResponse(status_code=200, content=task.model_dump())
 
 @app.delete("/tasks/{id}")
 def delete_tasks(id : int):
-    for item in tasks:
-        if item["id"] == id:
-            tasks.remove(item)
-            return Response(status_code=204)
-        
-    raise HTTPException(status_code=404, detail=f"Task {id} not found")
+    with Session(engine) as session:
+        task = session.get(Task, id)
+
+        if task is None:
+            raise HTTPException(status_code=404, detail=f"Task {id} not found")
+
+        session.delete(task)
+        session.commit()
+        return Response(status_code=204)
     
     
 # Extras
