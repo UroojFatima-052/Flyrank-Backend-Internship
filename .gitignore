@@ -19,3 +19,9 @@ Thumbs.db
 
 # Misc
 *.log
+
+# Database file
+tasks.db
+
+
+
