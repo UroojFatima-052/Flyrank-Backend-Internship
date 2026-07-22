@@ -59,7 +59,19 @@ HTTP/1.1 201 Created
 ```sql
 SELECT * FROM tasks WHERE done = 1;
 ```
+## AI vs. Me
 
+**What AI did better:**
+ChatGPT added connect_args={"check_same_thread": False} to the engine which prevents SQLite threading issues I didn't know this was needed.
+
+**What AI got wrong:**
+Used the deprecated @app.on_event("startup") instead of the modern lifespan approach.
+
+**What AI silently decided:**
+Added __tablename__ = "tasks" explicitly, added multi-threading support, and added a custom validation error handler none of which I specified in my prompt.
+
+**What I improved in my prompt:**
+Added that the lifespan approach should be used instead of on_event startup.
 
 ## What Actually Clicked
 
