@@ -3,6 +3,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from sqlmodel import Field, Session, SQLModel, create_engine, select
 from contextlib import asynccontextmanager
+from datetime import datetime
 
 # defining database url and engine
 DATABASE_URL = "sqlite:///tasks.db"   # -------> database url
@@ -13,6 +14,8 @@ class Task(SQLModel, table=True):   # ------> SQLModel is the base model that gi
     id : int | None = Field(primary_key=True, default=None)
     title : str
     done : bool = False
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
 
 # database function
 def create_db():
@@ -67,7 +70,7 @@ def specific_tasks(id : int):
 class TaskInput(BaseModel):
     title : str
 
-@app.post("/tasks")
+@app.post("/tasks", status_code=201)
 async def add_tasks(task: TaskInput):
     if not task.title or task.title.strip() == "":
         return JSONResponse(status_code=400, content={"error": "Title cannot be empty"})
@@ -81,14 +84,14 @@ async def add_tasks(task: TaskInput):
         session.commit()
         session.refresh(new_task)
         
-        return JSONResponse(status_code=201, content=new_task.model_dump())
+        return new_task
 
 #Stage 04
 class TaskUpdate(BaseModel):
     title : str = None
     done : bool = None
 
-@app.put("/tasks/{id}")
+@app.put("/tasks/{id}", status_code=200)
 def update_tasks(id : int, user_task : TaskUpdate):
     if user_task.title is None and user_task.done is None:
         return JSONResponse(status_code=400, content={"error": "Data cannot be empty"})
@@ -104,10 +107,12 @@ def update_tasks(id : int, user_task : TaskUpdate):
         if user_task.done is not None:
             task.done = user_task.done
 
+        task.updated_at = datetime.utcnow()
+
         session.commit()
         session.refresh(task)
 
-        return JSONResponse(status_code=200, content=task.model_dump())
+        return task
 
 @app.delete("/tasks/{id}")
 def delete_tasks(id : int):
@@ -126,32 +131,31 @@ def delete_tasks(id : int):
 # Query Parameter & Search Parameter
 @app.get("/tasks")
 def parameterized_tasks(done: bool = None, search: str = None):
+    query = select(Task)
+
+    if done is not None:
+        query = query.where(Task.done == done)
+
+    if search is not None:
+        query = query.where(Task.title.contains((search)))
+
+    query = query.order_by(Task.title)
+
     with Session(engine) as session:
-        all_tasks = session.exec(select(Task)).all()
-
-    if done is None and search is None:
-        return all_tasks
-    
-    filtered = []
-
-    for item in all_tasks:
-        done_match = (done is None) or (item.done == done)
-        search_match = (search is None) or (search in item.title)
-        
-        if done_match and search_match:
-            filtered.append(item)
-            
-    return filtered
+        return session.exec(query).all()
 
 # Stats
 @app.get("/stats")
 def stats():
-    total = len(tasks)
+    with Session(engine) as session:
+        all_tasks = session.exec(select(Task)).all()
+
+    total = len(all_tasks)
     
     count_done = 0
 
-    for item in tasks:
-        if item["done"] is True:
+    for item in all_tasks:
+        if item.done is True:
             count_done += 1
 
     open_tasks = total - count_done
@@ -159,15 +163,7 @@ def stats():
     return {"total" : total, "done" : count_done, "open" : open_tasks}
 
     
-@app.post("/reset")
-def reset():
-    tasks.clear()
-    
-    tasks.append({"id": 1, "title": "BE-01", "done": False})
-    tasks.append({"id": 2, "title": "Event Attend", "done": True})
-    tasks.append({"id": 3, "title": "Exercise", "done": False})
-    
-    return {"message": "Tasks reset successfully"}
+
 
 
 
