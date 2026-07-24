@@ -37,6 +37,7 @@ def create_db():
             for task in tasks:
                 session.add(task)
   
+            session.add()
             session.commit()
 
 @asynccontextmanager
