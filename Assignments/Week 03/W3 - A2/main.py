@@ -4,13 +4,18 @@ from pydantic import BaseModel
 from sqlmodel import Field, Session, SQLModel, create_engine, select
 from contextlib import asynccontextmanager
 from datetime import datetime
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # defining database url and engine
-DATABASE_URL = "sqlite:///tasks.db"   # -------> database url
+DATABASE_URL = os.getenv("DATABASE_URL")   # -------> database url
 engine = create_engine(DATABASE_URL)  # -------> create the connection at that path, like a door you can use to enter a database
 
 # A class that creates table in the database
 class Task(SQLModel, table=True):   # ------> SQLModel is the base model that gives database powers to the class, otherwise it would behave as a normal python class. 
+    __tablename__ = "tasks"
     id : int | None = Field(primary_key=True, default=None)
     title : str
     done : bool = False
@@ -19,6 +24,7 @@ class Task(SQLModel, table=True):   # ------> SQLModel is the base model that gi
 
 # database function
 def create_db():
+    print(f"Connecting to Database: {DATABASE_URL}")
     SQLModel.metadata.create_all(engine)
     with Session(engine) as session:
         existing = session.exec(select(Task)).all()
