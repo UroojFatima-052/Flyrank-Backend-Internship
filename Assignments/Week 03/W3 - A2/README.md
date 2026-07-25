@@ -31,10 +31,10 @@ Never commit `.env` — it's gitignored. The `.env.example` shows what variables
 ## Database Screenshots
 
 ### Tables
-![tables](Assignments\Week 03\W3 - A2\dt_screenshot.png)
+![tables](dt_screenshot.png)
 
 ### Data
-![data](Assignments\Week 03\W3 - A2\SELECT QUERY_screenshot.png)
+![data](SELECT QUERY_screenshot.png)
 
 ## Endpoints
 
