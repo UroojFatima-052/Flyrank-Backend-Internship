@@ -34,7 +34,7 @@ Never commit `.env` — it's gitignored. The `.env.example` shows what variables
 ![tables](dt_screenshot.png)
 
 ### Data
-![data](SELECT QUERY_screenshot.png)
+![data](SELECT_QUERY_screenshot.png)
 
 ## Endpoints
 
