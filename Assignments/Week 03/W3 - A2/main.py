@@ -46,7 +46,6 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-
 # Stage 01
 @app.get("/")
 def home():
