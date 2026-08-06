@@ -1,9 +1,10 @@
 import os
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Header, Depends
 from supabase import create_client
 from dotenv import load_dotenv
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 load_dotenv()
 
@@ -13,6 +14,7 @@ SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 app = FastAPI()
+security = HTTPBearer()
 
 # root route
 @app.get("/")
@@ -54,3 +56,19 @@ def login(login_data : LoginInput):
         }
     except Exception as e:
         return JSONResponse(status_code=401, content={"error" : "Invalid login credentials"})
+
+
+# stage 02: Public endpoint
+@app.get("/public/info", status_code = 200)
+def public():
+     return {"message": "Welcome stranger! This info is public."}
+
+# stage 02: Private endpoint
+@app.get("/protected/profile")
+def protected(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    if credentials is None:
+        raise HTTPException(status_code=401, detail={"error": "Access token required"})
+    
+    token = credentials.credentials
+    return token
+         
