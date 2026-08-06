@@ -66,9 +66,11 @@ def public():
 # stage 02: Private endpoint
 @app.get("/protected/profile")
 def protected(credentials: HTTPAuthorizationCredentials = Depends(security)):
-    if credentials is None:
-        raise HTTPException(status_code=401, detail={"error": "Access token required"})
-    
     token = credentials.credentials
-    return token
+    
+    try:
+        user = supabase.auth.get_user(token)
+        return user.user
+    except Exception as e:
+        raise HTTPException(status_code=401, detail={"error": "Invalid or expired token"})
          
