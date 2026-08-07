@@ -2,7 +2,7 @@ import os
 from fastapi import FastAPI, HTTPException, Header, Depends
 from supabase import create_client
 from dotenv import load_dotenv
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
@@ -63,14 +63,26 @@ def login(login_data : LoginInput):
 def public():
      return {"message": "Welcome stranger! This info is public."}
 
-# stage 02: Private endpoint
-@app.get("/protected/profile")
-def protected(credentials: HTTPAuthorizationCredentials = Depends(security)):
+# stage 02 + 03 + 04: Private endpoint
+def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
     token = credentials.credentials
-    
     try:
         user = supabase.auth.get_user(token)
         return user.user
     except Exception as e:
         raise HTTPException(status_code=401, detail={"error": "Invalid or expired token"})
-         
+    
+@app.get("/protected/profile")
+def protected(user = Depends(verify_token)):
+    return user
+
+# stage 04: Middelware + logout
+@app.get("/protected/dashboard")
+def dashboard(user = Depends(verify_token)):
+    return {"message": "Welcome to your dashboard", "user": user}
+
+# logout route
+@app.post("/auth/logout", status_code=204)
+def logout(user = Depends(verify_token)):
+    supabase.auth.sign_out()
+    return Response(status_code=204)
