@@ -85,4 +85,4 @@ def dashboard(user = Depends(verify_token)):
 @app.post("/auth/logout", status_code=204)
 def logout(user = Depends(verify_token)):
     supabase.auth.sign_out()
-    return Response(status_code=204)
+    return Response(status_code=201)
